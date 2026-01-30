@@ -28,6 +28,11 @@ class BM3(GeneralRecommender):
         self.reg_weight = config['reg_weight']
         self.cl_weight = config['cl_weight']
         self.dropout = config['dropout']
+        self.mm_weight = config['mm_weight']
+        # print(f"self.dropout: {self.dropout}, self.mm_weight: {self.mm_weight}")
+
+        if self.t_feat is not None and self.v_feat is not None:
+            self.modality_gate = nn.Linear(2*self.embedding_dim, 2)
 
         self.n_nodes = self.n_users + self.n_items
 
@@ -52,6 +57,41 @@ class BM3(GeneralRecommender):
             self.text_embedding = nn.Embedding.from_pretrained(self.t_feat, freeze=False)
             self.text_trs = nn.Linear(self.t_feat.shape[1], self.feat_embed_dim)
             nn.init.xavier_normal_(self.text_trs.weight)
+
+    def _compute_mm_item(self):
+        """
+        Returns:
+            mm_item: (n_items, embedding_dim) or None
+        """
+
+        t_proj, v_proj = None, None
+
+        if self.t_feat is not None:
+            t_proj = self.text_trs(self.text_embedding.weight)
+
+        if self.v_feat is not None:
+            v_proj = self.image_trs(self.image_embedding.weight)
+
+        if t_proj is None and v_proj is None:
+            print("No multi-modal features available!")
+            return None
+
+        if v_proj is None:
+            print("Only text features available!")
+            return t_proj
+
+        if t_proj is None:
+            print("Only visual features available!")
+            return v_proj
+
+        gate_input = torch.cat([t_proj, v_proj], dim=-1)
+        alpha = F.softmax(self.modality_gate(gate_input), dim=-1)
+
+        alpha_t = alpha[:, 0:1]
+        alpha_v = alpha[:, 1:2]
+
+        mm_item = alpha_t * t_proj + alpha_v * v_proj
+        return mm_item
 
     def get_norm_adj_mat(self, interaction_matrix):
         A = sp.dok_matrix((self.n_users + self.n_items,
@@ -90,7 +130,19 @@ class BM3(GeneralRecommender):
         all_embeddings = torch.stack(all_embeddings, dim=1)
         all_embeddings = all_embeddings.mean(dim=1, keepdim=False)
         u_g_embeddings, i_g_embeddings = torch.split(all_embeddings, [self.n_users, self.n_items], dim=0)
-        return u_g_embeddings, i_g_embeddings + h
+
+        mm_item = self._compute_mm_item()
+        # print(f"MM item feature computed: {mm_item}")
+        # print(f"MM weight: {self.mm_weight}")
+        # print(f"Item g embeddings: {i_g_embeddings}")
+        # print(f"h: {h}")
+        # print(f"Dropout: {self.dropout}")
+        if mm_item is not None:
+            i_out = i_g_embeddings + h + self.mm_weight * mm_item
+        else:
+            i_out = i_g_embeddings + h
+        # return u_g_embeddings, i_g_embeddings + h
+        return u_g_embeddings, i_out
 
     def calculate_loss(self, interactions):
         # online network
