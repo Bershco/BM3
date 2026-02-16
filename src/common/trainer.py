@@ -98,6 +98,13 @@ class Trainer(AbstractTrainer):
         self.item_tensor = None
         self.tot_item_num = None
 
+        # save model
+        self.checkpoint_dir = config['checkpoint_dir']
+        if not os.path.exists(self.checkpoint_dir):
+            os.makedirs(self.checkpoint_dir)
+        saved_model_file = self._build_stacking_checkpoint_name()
+        self.saved_model_file = os.path.join(self.checkpoint_dir, saved_model_file)
+
     def _build_optimizer(self):
         r"""Init the Optimizer
 
@@ -177,6 +184,37 @@ class Trainer(AbstractTrainer):
             #raise ValueError('Training loss is nan')
             return True
 
+    def _save_checkpoint(self, epoch):
+        r"""Store the model parameters information and training information.
+        Args:
+            epoch (int): the current epoch id
+        """
+        if os.path.isfile(self.saved_model_file):
+            os.remove(self.saved_model_file)
+        state = {
+            'config': self.config,
+            'epoch': epoch,
+            'cur_step': self.cur_step,
+            'best_valid_score': self.best_valid_score,
+            'state_dict': self.model.state_dict(),
+            'optimizer': self.optimizer.state_dict(),
+        }
+        torch.save(state, self.saved_model_file)
+
+    def _build_stacking_checkpoint_name(self):
+        dataset = self.config['dataset'] or 'unknown'
+        hyper_params = self.config['hyper_parameters'] or []
+        parts = []
+        for param in hyper_params:
+            value = self.config[param]
+            if isinstance(value, (list, tuple)):
+                value = ','.join(map(str, value))
+            parts.append(f"{param}={value}")
+        hyper_str = '-'.join(parts) if parts else 'no-hparams'
+        safe_hyper_str = hyper_str.replace(os.sep, '_').replace(' ', '')
+        timestamp = get_local_time()
+        return f"stacking-{self.config['model']}-{dataset}-{safe_hyper_str}-{timestamp}.pth"
+
     def _generate_train_loss_output(self, epoch_idx, s_time, e_time, losses):
         train_loss_output = 'epoch %d training [time: %.2fs, ' % (epoch_idx, e_time - s_time)
         if isinstance(losses, tuple):
@@ -240,6 +278,9 @@ class Trainer(AbstractTrainer):
                     self.logger.info('test result: \n' + dict2str(test_result))
                 if update_flag:
                     update_output = '██ ' + self.config['model'] + '--Best validation results updated!!!'
+                    if saved:
+                        self._save_checkpoint(epoch_idx)
+                        update_output += '█ Model saved at: %s' % self.saved_model_file
                     if verbose:
                         self.logger.info(update_output)
                     self.best_valid_result = valid_result
