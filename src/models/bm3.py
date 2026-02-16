@@ -136,15 +136,10 @@ class BM3(GeneralRecommender):
         all_embeddings = torch.stack(all_embeddings, dim=1)
         all_embeddings = all_embeddings.mean(dim=1, keepdim=False)
         u_g_embeddings, i_g_embeddings = torch.split(all_embeddings, [self.n_users, self.n_items], dim=0)
-
-        if self.mm_weight_learnable:
+        mm_item = None
+        if self.mm_weight_learnable or self.mm_weight != 0:
             mm_item = self._compute_mm_item()
-        # print(f"MM item feature computed: {mm_item}")
-        # print(f"MM weight: {self.mm_weight}")
-        # print(f"Item g embeddings: {i_g_embeddings}")
-        # print(f"h: {h}")
-        # print(f"Dropout: {self.dropout}")
-        if self.mm_weight_learnable and mm_item is not None:
+        if mm_item is not None:
             if self.mm_weight_learnable:
                 weight_input = torch.cat([i_g_embeddings + h, mm_item], dim=-1)
                 alpha = F.softmax(self.mm_weight_layer(weight_input), dim=-1)
@@ -155,7 +150,6 @@ class BM3(GeneralRecommender):
                 i_out = i_g_embeddings + h + self.mm_weight * mm_item
         else:
             i_out = i_g_embeddings + h
-        # return u_g_embeddings, i_g_embeddings + h
         return u_g_embeddings, i_out
 
     def calculate_loss(self, interactions):
