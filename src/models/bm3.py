@@ -29,9 +29,15 @@ class BM3(GeneralRecommender):
         self.cl_weight = config['cl_weight']
         self.dropout = config['dropout']
         self.mm_weight = config['mm_weight']
+        self.mm_weight_learnable = bool(config['mm_weight_learnable'])
         # print(f"self.dropout: {self.dropout}, self.mm_weight: {self.mm_weight}")
 
-        if self.t_feat is not None and self.v_feat is not None:
+        if self.mm_weight_learnable:
+            print("Using learnable MM weight!")
+            self.mm_weight_layer = nn.Linear(2 * self.embedding_dim, 2)
+            nn.init.xavier_normal_(self.mm_weight_layer.weight)
+
+        if self.mm_weight_learnable and self.t_feat is not None and self.v_feat is not None:
             self.modality_gate = nn.Linear(2*self.embedding_dim, 2)
 
         self.n_nodes = self.n_users + self.n_items
@@ -131,14 +137,22 @@ class BM3(GeneralRecommender):
         all_embeddings = all_embeddings.mean(dim=1, keepdim=False)
         u_g_embeddings, i_g_embeddings = torch.split(all_embeddings, [self.n_users, self.n_items], dim=0)
 
-        mm_item = self._compute_mm_item()
+        if self.mm_weight_learnable:
+            mm_item = self._compute_mm_item()
         # print(f"MM item feature computed: {mm_item}")
         # print(f"MM weight: {self.mm_weight}")
         # print(f"Item g embeddings: {i_g_embeddings}")
         # print(f"h: {h}")
         # print(f"Dropout: {self.dropout}")
-        if mm_item is not None:
-            i_out = i_g_embeddings + h + self.mm_weight * mm_item
+        if self.mm_weight_learnable and mm_item is not None:
+            if self.mm_weight_learnable:
+                weight_input = torch.cat([i_g_embeddings + h, mm_item], dim=-1)
+                alpha = F.softmax(self.mm_weight_layer(weight_input), dim=-1)
+                alpha_g = alpha[:, 0:1]
+                alpha_mm = alpha[:, 1:2]
+                i_out = alpha_g * (i_g_embeddings + h) + alpha_mm * mm_item
+            else:
+                i_out = i_g_embeddings + h + self.mm_weight * mm_item
         else:
             i_out = i_g_embeddings + h
         # return u_g_embeddings, i_g_embeddings + h
