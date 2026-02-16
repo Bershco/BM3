@@ -14,6 +14,7 @@ from utils.configurator import Config
 from utils.utils import init_seed, get_model, get_trainer, dict2str
 import platform
 import os
+import torch
 
 
 def quick_start(model, dataset, config_dict, save_model=True):
@@ -72,11 +73,21 @@ def quick_start(model, dataset, config_dict, save_model=True):
         train_data.pretrain_setup()
         # model loading and initialization
         model = get_model(config['model'])(config, train_data).to(config['device'])
+        if config['load_model']:
+            load_path = config['load_model_path']
+            if not load_path:
+                raise ValueError('load_model_path must be set when load_model is True')
+            checkpoint = torch.load(load_path, map_location=config['device'])
+            state_dict = checkpoint['state_dict'] if isinstance(checkpoint, dict) and 'state_dict' in checkpoint else checkpoint
+            model.load_state_dict(state_dict)
         logger.info(model)
 
         # trainer loading and initialization
         trainer = get_trainer()(config, model)
-        # debug
+        if config['inference_only']:
+            test_result = trainer.evaluate(test_data, is_test=True, idx=idx)
+            logger.info('inference-only test result: {}'.format(dict2str(test_result)))
+            return
         # model training
         best_valid_score, best_valid_result, best_test_upon_valid = trainer.fit(train_data, valid_data=valid_data, test_data=test_data, saved=save_model)
         #########
