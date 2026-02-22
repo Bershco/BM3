@@ -4,11 +4,10 @@
 #SBATCH --time=2-00:00:00
 #SBATCH --mem=48G
 #SBATCH --mail-type=FAIL
-#SBATCH --mail-user=hersco@post.bgu.ac.il
+#SBATCH --mail-user={email}
 #SBATCH --job-name=bm3
-#SBATCH --output=/home/hersco/RecSys_Project/bm3_experiments/logs_seeds_2/%x-%j.out
-#SBATCH --error=/home/hersco/RecSys_Project/bm3_experiments/logs_seeds_2/%x-%j.err
-#SBATCH --exclude=cs-6000-04
+#SBATCH --output={output_path}/%x-%j.out
+#SBATCH --error={output_path}/%x-%j.err
 
 set -euo pipefail
 

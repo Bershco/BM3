@@ -6,7 +6,7 @@ from collections import defaultdict
 # -------------------------------------------------
 # Configuration
 # -------------------------------------------------
-LOG_DIR = Path("/home/hersco/RecSys_Project/bm3_experiments/logs_v2_0")
+LOG_DIR = Path("{output_path}/logs_v2_0")
 OUT_FILE = "bm3_top3_config_by_dataset_make_sure.csv"
 
 METRICS = [

@@ -7,7 +7,7 @@ from collections import defaultdict
 # =================================================
 # Configuration
 # =================================================
-LOG_DIR = Path("/home/hersco/RecSys_Project/bm3_experiments/logs_seeds_2")
+LOG_DIR = Path("{output_path}/logs_seeds_2")
 OUT_FILE = "bm3_seed_2_aggregated_results.csv"
 
 METRICS = [

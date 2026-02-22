@@ -9,10 +9,10 @@ if [ ! -d "$CHECKPOINT_DIR" ]; then
     exit 1
 fi
 
-LOG_DIR="/home/hersco/RecSys_Project/bm3_experiments/mgod_logs"
+LOG_DIR="{output_path}/mgod_logs"
 mkdir -p "$LOG_DIR"
 
-SBATCH_FILE="/home/hersco/RecSys_Project/BM3/bm3_retrieve_mgod.sbatch"
+SBATCH_FILE="{scripts_path}/bm3_retrieve_mgod.sbatch"
 
 echo "Scanning directory: $CHECKPOINT_DIR"
 echo

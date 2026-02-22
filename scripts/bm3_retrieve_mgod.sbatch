@@ -4,9 +4,9 @@
 #SBATCH --time=0-04:00:00
 #SBATCH --mem=24G
 #SBATCH --mail-type=FAIL
-#SBATCH --mail-user=hersco@post.bgu.ac.il
-#SBATCH --output=/home/hersco/RecSys_Project/bm3_experiments/mgod_logs/%x-%j.out
-#SBATCH --error=/home/hersco/RecSys_Project/bm3_experiments/mgod_logs/%x-%j.err
+#SBATCH --mail-user={email}
+#SBATCH --output={output_path}/mgod_logs/%x-%j.out
+#SBATCH --error={output_path}/mgod_logs/%x-%j.err
 
 set -euo pipefail
 
@@ -22,9 +22,9 @@ echo "Seed: $SEED"
 echo "=========================="
 
 module load anaconda
-source activate RecSys_Project
+source activate {conda_env_name}
 
-cd /home/hersco/RecSys_Project/BM3/src/
+cd {main.py_path}
 
 python main.py \
   --retrieve_mgod \

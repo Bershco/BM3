@@ -6,7 +6,7 @@ set -euo pipefail
 # -------------------------------------------------
 SEEDS=(999 0 123 42 420 82 2026 1337 31415 1111999)
 
-SBATCH_FILE="/home/hersco/RecSys_Project/BM3/bm3_single_run.sbatch"
+SBATCH_FILE="{scripts_path}/bm3_single_run.sbatch"
 
 # -------------------------------------------------
 # ELEC – top 3 configs

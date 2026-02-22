@@ -1,7 +1,7 @@
 #!/bin/bash
 set -euo pipefail
 
-SBATCH_FILE="/home/hersco/RecSys_Project/BM3/bm3_single_run.sbatch"
+SBATCH_FILE="{scripts_path}/bm3_single_run.sbatch"
 
 # -------------------------------------------------
 # Config tables (MUST match seed sweep script)

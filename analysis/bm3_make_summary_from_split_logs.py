@@ -8,7 +8,7 @@ from scipy.stats import ttest_ind
 # ============================================================
 # PATH
 # ============================================================
-LOG_DIR = Path("/home/hersco/RecSys_Project/bm3_experiments/logs_seeds")
+LOG_DIR = Path("{output_path}/logs_seeds")
 
 OUT_RESULTS = "bm3_results_long.csv"
 OUT_STATS   = "bm3_significance.csv"
