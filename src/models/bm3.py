@@ -37,7 +37,7 @@ class BM3(GeneralRecommender):
             self.mm_weight_layer = nn.Linear(2 * self.embedding_dim, 2)
             nn.init.xavier_normal_(self.mm_weight_layer.weight)
 
-        if self.mm_weight_learnable and self.t_feat is not None and self.v_feat is not None:
+        if self.t_feat is not None and self.v_feat is not None:
             self.modality_gate = nn.Linear(2*self.embedding_dim, 2)
 
         self.n_nodes = self.n_users + self.n_items
@@ -137,7 +137,7 @@ class BM3(GeneralRecommender):
         all_embeddings = all_embeddings.mean(dim=1, keepdim=False)
         u_g_embeddings, i_g_embeddings = torch.split(all_embeddings, [self.n_users, self.n_items], dim=0)
         mm_item = None
-        if self.mm_weight_learnable or self.mm_weight != 0:
+        if self.mm_weight_learnable or (self.mm_weight is not None and self.mm_weight != 0):
             mm_item = self._compute_mm_item()
         if mm_item is not None:
             if self.mm_weight_learnable:
