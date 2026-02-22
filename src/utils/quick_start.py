@@ -16,6 +16,48 @@ import platform
 import os
 import torch
 
+def save_modality_gate(model, config):
+    if not hasattr(model, "modality_gate"):
+        print("Model has no modality_gate. Skipping.")
+        return
+
+    if model.t_feat is None or model.v_feat is None:
+        print("Model does not have both modalities. Skipping.")
+        return
+
+    model.eval()
+    with torch.no_grad():
+        t_proj = model.text_trs(model.text_embedding.weight)
+        v_proj = model.image_trs(model.image_embedding.weight)
+
+        gate_input = torch.cat([t_proj, v_proj], dim=-1)
+        alpha = torch.softmax(model.modality_gate(gate_input), dim=-1)
+
+        alpha = alpha.cpu().numpy()
+
+    # directory
+    out_dir = os.path.join(os.getcwd(), "modality_gate_outputs")
+    os.makedirs(out_dir, exist_ok=True)
+
+    dataset_name = config['dataset']
+    fname_base = f"modality_gate_{dataset_name}_L{config['n_layers']}_R{config['reg_weight']}_D{config['dropout']}_M{config['mm_weight']}_S{config['seed']}"
+
+    # Save NPY
+    npy_path = os.path.join(out_dir, fname_base + ".npy")
+    import numpy as np
+    np.save(npy_path, alpha)
+
+    # Save CSV
+    csv_path = os.path.join(out_dir, fname_base + ".csv")
+    import csv
+    with open(csv_path, "w", newline="") as f:
+        writer = csv.writer(f)
+        writer.writerow(["item_id", "alpha_text", "alpha_visual"])
+        for i in range(alpha.shape[0]):
+            writer.writerow([i, alpha[i, 0], alpha[i, 1]])
+
+    print(f"Saved modality gate to {npy_path} and {csv_path}")
+
 
 def quick_start(model, dataset, config_dict, save_model=True):
     # merge config dict
@@ -84,6 +126,8 @@ def quick_start(model, dataset, config_dict, save_model=True):
 
         # trainer loading and initialization
         trainer = get_trainer()(config, model)
+        if config['retrieve_mgod'] and config['load_model']:
+            save_modality_gate(model, config)
         if config['inference_only']:
             test_result = trainer.evaluate(test_data, is_test=True, idx=idx)
             logger.info('inference-only test result: {}'.format(dict2str(test_result)))
