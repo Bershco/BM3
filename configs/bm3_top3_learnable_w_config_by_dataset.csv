@@ -1,0 +1,13 @@
+dataset,recall@10,recall@20,ndcg@10,ndcg@20,job,log_file
+elec,0.044,0.0638,0.0248,0.0299,bm3_elec_L2_R0.1_D0.5_M0-14866477,bm3_elec_L2_R0.1_D0.5_M0-14866477.err
+elec,0.0434,0.0627,0.0239,0.0288,bm3_elec_L2_R0.01_D0.5_M0-14866479,bm3_elec_L2_R0.01_D0.5_M0-14866479.err
+elec,0.0433,0.0641,0.0244,0.0298,bm3_elec_L2_R0.01_D0.3_M0-14866478,bm3_elec_L2_R0.01_D0.3_M0-14866478.err
+clothing,0.0416,0.0617,0.0225,0.0276,bm3_clothing_L1_R0.1_D0.5_M0-14866489,bm3_clothing_L1_R0.1_D0.5_M0-14866489.err
+clothing,0.0402,0.0604,0.0219,0.027,bm3_clothing_L1_R0.01_D0.3_M0-14866490,bm3_clothing_L1_R0.01_D0.3_M0-14866490.err
+clothing,0.0396,0.0606,0.0216,0.0269,bm3_clothing_L1_R0.01_D0.5_M0-14866491,bm3_clothing_L1_R0.01_D0.5_M0-14866491.err
+sports,0.0643,0.096,0.0351,0.0432,bm3_sports_L1_R0.1_D0.5_M0_rerun-14866671,bm3_sports_L1_R0.1_D0.5_M0_rerun-14866671.err
+sports,0.0626,0.0943,0.0344,0.0426,bm3_sports_L1_R0.01_D0.5_M0_rerun-14870416,bm3_sports_L1_R0.01_D0.5_M0_rerun-14870416.err
+sports,0.0622,0.0941,0.0336,0.0419,bm3_sports_L1_R0.1_D0.3_M0_rerun-14866672,bm3_sports_L1_R0.1_D0.3_M0_rerun-14866672.err
+baby,0.0518,0.0818,0.028,0.0357,bm3_baby_L1_R0.1_D0.3_M0-14866464,bm3_baby_L1_R0.1_D0.3_M0-14866464.err
+baby,0.0516,0.0812,0.0272,0.0348,bm3_baby_L1_R0.1_D0.5_M0-14866465,bm3_baby_L1_R0.1_D0.5_M0-14866465.err
+baby,0.05,0.0805,0.0268,0.0346,bm3_baby_L1_R0.01_D0.5_M0-14866467,bm3_baby_L1_R0.01_D0.5_M0-14866467.err
