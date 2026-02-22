@@ -35,9 +35,9 @@ This repository focuses on **reproducibility and transparency**, rather than pro
 
 The experiments were conducted using the following environment (as reported directly by the runtime):
 
-- **Python**: 3.9.21 (GCC 11.5.0)
-- **PyTorch**: 2.2.2+cu121
-- **CUDA**: 12.1
+- **Python**: 3.7.12 (GCC 9.4.0)
+- **PyTorch**: 1.13.1+cu117
+- **CUDA**: 11.7
 - **GPU**: NVIDIA RTX 6000 Ada Generation
 - **Operating System**: Linux (x86_64, glibc 2.34)
 
