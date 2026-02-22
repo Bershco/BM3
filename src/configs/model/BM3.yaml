@@ -4,13 +4,13 @@ feat_embed_dim: 64
 n_layers: [1, 2]
 dropout: [0.3, 0.5]
 reg_weight: [0.1, 0.01]
-# mm_weight: [0, 0.3, 0.7, 1.0]
-# mm_weight_learnable: False
-mm_weight_learnable: True
+mm_weight: [0, 0.3, 0.7, 1.0]
+mm_weight_learnable: False
+#mm_weight_learnable: True
 cl_weight: 2.0
 checkpoint_dir: 'saved'
 
 use_neg_sampling: False
 
-# hyper_parameters: ["n_layers", "reg_weight", "dropout", "mm_weight"]
-hyper_parameters: ["n_layers", "reg_weight", "dropout"]
+hyper_parameters: ["n_layers", "reg_weight", "dropout", "mm_weight"]
+#hyper_parameters: ["n_layers", "reg_weight", "dropout"]
