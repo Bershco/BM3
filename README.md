@@ -1,41 +1,180 @@
-# BM3 (WWW'23)
-Pytorch implementation for "Bootstrap Latent Representations for Multi-modal Recommendation"-WWW'23 [Official ACM](https://dl.acm.org/doi/10.1145/3543507.3583251)
-- Trained logs&models are stored at: https://github.com/enoche/BM3/tree/master/trained-models-logs
-- :twisted_rightwards_arrows: This model is integrated into the [MMRec](https://github.com/enoche/MMRec) framework.
-- :point_right: Check the awesome [multimodal recommendation resources](https://github.com/enoche/MultimodalRecSys).
+# Adaptive Modality Weighting for Multi-Modal Recommendation (BM3 Extension)
 
-## Overview of BM3
-<p>
-<img src="./images/bm3.png" width="800">
-</p>
+This repository contains the code and experimental artifacts for the project
+**"Adaptive Modality Weighting for Multi-Modal Recommendation"**, conducted as part of a university course project.
 
-## Data  
-Download from Google Drive: [Baby/Sports/Elec](https://drive.google.com/drive/folders/13cBy1EA_saTUuXxVllKgtfci2A09jyaG?usp=sharing)  
-The data already contains text and image features extracted from Sentence-Transformers and CNN.  
+The work extends the BM3 multi-modal recommendation model by introducing a lightweight modality gating mechanism that adaptively weights textual and visual item representations. The project includes a full reproduction study of BM3, an architectural extension, and a multi-seed robustness evaluation across several datasets.
 
-## How to run
-1. Put your downloaded data (e.g. `baby`) under `data` dir.
-2. Enter `src` folder and run with  
-`python main.py -m BM3 -d baby`  
-You may specify other parameters in CMD or config with `configs/model/*.yaml` and `configs/dataset/*.yaml`.
+---
 
-## Best hyper-parameters for reproducibility
-We report the best hyper-parameters of BM3 to reproduce the results in Table III of our paper as:  
+## Authors
 
-| Datasets | layers | dropout | reg_weight |
-|----------|--------|---------|------------|
-| Baby     | 1      | 0.5     | 0.1        |
-| Sports   | 1      | 0.5     | 0.01       |
-| Elec     | 2      | 0.3     | 0.1        |
+- **Roee Hersco** — hersco@post.bgu.ac.il
+- **Yonatan Baruch Baruch** — yonataba@post.bgu.ac.il
 
+Ben-Gurion University of the Negev
 
-## Citation
+---
+
+## Project Overview
+
+The goal of this project is to study whether **adaptive modality weighting** can improve the performance and robustness of multi-modal recommendation systems.
+
+Key aspects:
+- Reproduction of the original BM3 results using the public codebase
+- Introduction of a learnable modality gating module
+- Evaluation across four Amazon review datasets
+- Statistical significance testing across multiple random seeds
+- Analysis of a learnable fusion-weight variant (negative result)
+
+This repository focuses on **reproducibility and transparency**, rather than proposing a new state-of-the-art model.
+
+---
+
+## Environment
+
+The experiments were conducted using the following environment (as reported directly by the runtime):
+
+- **Python**: 3.9.21 (GCC 11.5.0)
+- **PyTorch**: 2.2.2+cu121
+- **CUDA**: 12.1
+- **GPU**: NVIDIA RTX 6000 Ada Generation
+- **Operating System**: Linux (x86_64, glibc 2.34)
+
+These values were obtained using:
+
+```bash
+python -c "import sys; print(sys.version)"
+python -c "import torch; print('torch', torch.__version__); print('cuda', torch.version.cuda); print('gpu', torch.cuda.get_device_name(0) if torch.cuda.is_available() else 'cpu-only')"
+python -c "import platform; print(platform.platform())"
 ```
-@inproceedings{zhou2023bootstrap,
-author = {Zhou, Xin and Zhou, Hongyu and Liu, Yong and Zeng, Zhiwei and Miao, Chunyan and Wang, Pengwei and You, Yuan and Jiang, Feijun},
-title = {Bootstrap Latent Representations for Multi-Modal Recommendation},
-booktitle = {Proceedings of the ACM Web Conference 2023},
-pages = {845–854},
-year = {2023}
-}
+
+GPU acceleration is strongly recommended for training and evaluation.
+
+
+---
+
+## Repository Structure
+
 ```
+BM3/
+├── src/                # BM3 source code with modality gating extension
+│
+├── configs/            # Dataset-level configuration summaries
+│   ├── bm3_top1_restored_config_by_dataset.csv
+│   ├── bm3_top3_learnable_w_config_by_dataset.csv
+│   └── bm3_top1_by_dataset_original_restored.csv
+│
+├── scripts/            # Experiment and job submission scripts
+│   ├── bm3_single_run.sbatch
+│   ├── submit_bm3_grid.sh
+│   ├── submit_bm3_seed_sweep.sh
+│   └── rerun_bm3_jobs.sh
+│
+├── analysis/           # Log parsing and result aggregation
+│   ├── parse_bm3_logs.py
+│   ├── aggregate_bm3_seed_results_TEST_ONLY.py
+│   ├── bm3_make_summary_from_split_logs.py
+│   └── analyze_mgod.py
+│
+├── results/            # Final aggregated results used in the paper
+│   ├── bm3_results_long.csv
+│   ├── bm3_significance.csv
+│   └── bm3_seed_aggregated_results.csv
+│
+└── README.md
+```
+
+---
+
+## Datasets
+
+The experiments use four Amazon review datasets:
+
+- Baby
+- Electronics
+- Sports
+- Clothing
+
+Datasets are **not included** in this repository due to size constraints.
+
+Expected layout:
+
+```
+data/
+└── <dataset_name>/
+    ├── *.inter
+    └── ...
+```
+
+Dataset-specific configuration files are expected at:
+
+```
+src/configs/dataset/<dataset_name>.yaml
+```
+
+All preprocessing follows the original BM3 setup. Please refer to the original BM3 repository for dataset preparation instructions.
+
+---
+
+## Running the Model Locally
+
+The canonical command to run BM3 locally is:
+
+```
+python main.py
+```
+
+Default parameters:
+- dataset: `baby`
+- number of layers: `2`
+- regularization weight: `0.01`
+- dropout: `0.5`
+- modality fusion weight (`mm_weight`): `1.0`
+- random seed: `999`
+
+The model loads the dataset configuration from `src/configs/dataset/baby.yaml`.
+
+---
+
+## Running Experiments on a Cluster
+
+For cluster-based execution, the recommended interface is:
+
+```
+scripts/bm3_single_run.sbatch
+```
+
+Additional scripts are provided for:
+- Hyperparameter grid search
+- Multi-seed evaluation
+- Re-running failed jobs
+
+These scripts may require minor path adjustments depending on the computing environment.
+
+---
+
+## Modality Gating and Fusion Weight
+
+The modality gating mechanism is enabled by default in the modified BM3 implementation.
+
+The **fusion weight (`mm_weight`)**:
+- Can be set as a fixed hyperparameter
+- Can also be enabled as a learnable parameter (experimental variant)
+
+We evaluated a configuration in which both the modality gate and the fusion weight are learned jointly. This variant did not improve performance beyond fixed-weight gating, but it also did not degrade results. This negative result is discussed in the accompanying report.
+
+---
+
+## Reproducing Paper Results
+
+The main paper tables are derived from the following CSV files:
+
+- `results/bm3_results_long.csv`
+- `results/bm3_significance.csv`
+
+These are generated by parsing raw experiment logs using scripts in the `analysis/` directory. Due to environment-specific log paths, users may need to adjust input directories in these scripts.
+
+---
+
+## Notes on Reprodu
